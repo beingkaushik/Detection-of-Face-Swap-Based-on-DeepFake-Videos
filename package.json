@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
   "name": "training-nodejs-backend",
   "version": "1.0.0",
   "description": "This repository contains backend tasks implemented using Node.js and Express.",
@@ -70,10 +71,23 @@
     "vary": "^1.1.2",
     "wrappy": "^1.0.2"
   },
+=======
+  "name": "student-management-api",
+  "version": "1.0.0",
+  "main": "index.js",
+>>>>>>> ac44db982bb2933397fcc814bbe3fcf9577d2e37
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
+<<<<<<< HEAD
   "license": "ISC"
+=======
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+>>>>>>> ac44db982bb2933397fcc814bbe3fcf9577d2e37
 }
