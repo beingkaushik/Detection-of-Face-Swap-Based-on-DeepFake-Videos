@@ -1,0 +1,1932 @@
+{% extends "base.html" %}
+
+{% block title %}Try DeepShield AI Demo - Deepfake Detection{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary: #6366f1;
+        --primary-dark: #4f46e5;
+        --secondary: #10b981;
+        --accent: #f59e0b;
+        --dark: #0f172a;
+        --light: #1e293b;
+        --gray: #64748b;
+        --danger: #ef4444;
+        --success: #10b981;
+        --text-primary: #ffffff;
+        --text-secondary: #cbd5e1;
+        --text-muted: #94a3b8;
+        --text-dark: #1e293b;
+    }
+
+    .demo-hero {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        padding: 120px 0 80px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .demo-hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><defs><radialGradient id="a" cx=".5" cy=".5" r=".5"><stop offset="0%" stop-color="%236366f1" stop-opacity=".1"/><stop offset="100%" stop-color="%236366f1" stop-opacity="0"/></radialGradient></defs><rect width="100%" height="100%" fill="url(%23a)"/></svg>');
+    }
+
+    .demo-hero h1 {
+        font-size: 3.5rem;
+        font-weight: 800;
+        margin-bottom: 1.5rem;
+        background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .demo-hero p {
+        font-size: 1.25rem;
+        color: var(--text-secondary);
+        max-width: 600px;
+        margin: 0 auto;
+        line-height: 1.7;
+    }
+
+    .demo-interface {
+        padding: 80px 0;
+        background: #0f172a;
+        position: relative;
+    }
+
+    .demo-container {
+        max-width: 900px;
+        margin: 0 auto;
+        background: rgba(30, 41, 59, 0.95);
+        border-radius: 24px;
+        padding: 3rem;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(20px);
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .demo-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--secondary));
+    }
+
+    .upload-section {
+        position: relative;
+    }
+
+    .upload-area {
+        border: 3px dashed rgba(99, 102, 241, 0.4);
+        border-radius: 20px;
+        padding: 4rem 2rem;
+        text-align: center;
+        transition: all 0.4s ease;
+        background: rgba(15, 23, 42, 0.8);
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+    }
+
+    .upload-area::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.1), transparent);
+        transition: left 0.6s ease;
+    }
+
+    .upload-area:hover::before {
+        left: 100%;
+    }
+
+    .upload-area.drag-over {
+        border-color: var(--primary);
+        background: rgba(99, 102, 241, 0.15);
+        transform: scale(1.02);
+        box-shadow: 0 15px 40px rgba(99, 102, 241, 0.3);
+    }
+
+    .upload-area.has-file {
+        background: rgba(99, 102, 241, 0.1);
+        border-color: var(--primary);
+        padding: 2rem;
+    }
+
+    .upload-icon {
+        font-size: 4rem;
+        margin-bottom: 1.5rem;
+        display: block;
+        animation: float 3s ease-in-out infinite;
+        color: var(--text-primary);
+        transition: all 0.3s ease;
+    }
+
+    .upload-area.has-file .upload-icon {
+        color: var(--primary);
+        animation: none;
+        transform: scale(0.8);
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+    }
+
+    .upload-area h3 {
+        margin-bottom: 0.5rem;
+        color: var(--text-primary);
+        font-size: 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .upload-area.has-file h3 {
+        color: var(--primary);
+    }
+
+    .upload-area p {
+        color: var(--text-secondary);
+        margin-bottom: 0.5rem;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+    }
+
+    .upload-area.has-file p {
+        opacity: 0.7;
+    }
+
+    .file-size-info {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+    }
+
+    .upload-button {
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        margin-top: 1rem;
+    }
+
+    .upload-button::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .upload-button:hover::before {
+        left: 100%;
+    }
+
+    /* File Preview Styles */
+    .file-preview-container {
+        display: none;
+        margin-top: 2rem;
+        text-align: center;
+        animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .file-preview {
+        max-width: 300px;
+        max-height: 200px;
+        border-radius: 12px;
+        border: 2px solid rgba(99, 102, 241, 0.3);
+        background: rgba(15, 23, 42, 0.9);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        margin: 0 auto;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .file-preview video,
+    .file-preview img {
+        width: 100%;
+        height: 100%;
+        border-radius: 10px;
+        object-fit: cover;
+        background: rgba(30, 41, 59, 0.9);
+        display: block;
+    }
+
+    .file-preview video {
+        background: #000;
+    }
+
+    .file-name {
+        margin-top: 1rem;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    .file-type-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        backdrop-filter: blur(10px);
+    }
+
+    .upload-progress {
+        text-align: center;
+    }
+
+    .progress-text {
+        color: var(--text-secondary) !important;
+        margin-top: 1rem;
+        font-size: 1.1rem;
+        font-weight: 500;
+    }
+
+    .progress-bar {
+        width: 100%;
+        height: 12px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        overflow: hidden;
+        margin: 2rem 0;
+        position: relative;
+    }
+
+    .progress-bar::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+        animation: shimmer 2s infinite;
+    }
+
+    @keyframes shimmer {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--primary), var(--secondary));
+        transition: width 0.4s ease;
+        width: 0%;
+        position: relative;
+        z-index: 2;
+        border-radius: 10px;
+    }
+
+    .analysis-section {
+        position: relative;
+    }
+
+    .analysis-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .analysis-header h3 {
+        color: var(--text-primary);
+        font-size: 1.8rem;
+        margin-bottom: 2rem;
+        font-weight: 600;
+    }
+
+    .analysis-steps {
+        display: flex;
+        justify-content: space-between;
+        margin: 2rem 0;
+        position: relative;
+    }
+
+    .analysis-steps::before {
+        content: '';
+        position: absolute;
+        top: 25px;
+        left: 10%;
+        right: 10%;
+        height: 3px;
+        background: linear-gradient(90deg, var(--primary), var(--secondary));
+        opacity: 0.3;
+        z-index: 1;
+    }
+
+    .step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+        z-index: 2;
+        transition: all 0.3s ease;
+    }
+
+    .step:hover {
+        transform: translateY(-5px);
+    }
+
+    .step-number {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: rgba(30, 41, 59, 0.8);
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+        border: 2px solid rgba(99, 102, 241, 0.3);
+        font-size: 1.2rem;
+    }
+
+    .step.active .step-number {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        border-color: rgba(255, 255, 255, 0.3);
+        box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+
+    .step.completed .step-number {
+        background: var(--success);
+        color: white;
+        border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .step-text {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        font-weight: 500;
+        text-align: center;
+    }
+
+    .step.active .step-text {
+        color: var(--text-primary);
+        font-weight: 600;
+    }
+
+    .analysis-progress {
+        margin-top: 2rem;
+        text-align: center;
+    }
+
+    .analysis-status {
+        color: var(--text-primary) !important;
+        margin-top: 1rem;
+        font-size: 1.1rem;
+        font-weight: 500;
+    }
+
+    .results-section {
+        position: relative;
+    }
+
+    .results-header {
+        text-align: center;
+        margin-bottom: 3rem;
+        position: relative;
+    }
+
+    .results-header h3 {
+        color: var(--text-primary);
+        font-size: 2rem;
+        margin-bottom: 1.5rem;
+        font-weight: 600;
+    }
+
+    .verdict-badge {
+        display: inline-block;
+        padding: 1.5rem 3rem;
+        border-radius: 50px;
+        font-weight: 800;
+        font-size: 2rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        border: 3px solid transparent;
+        margin: 1rem 0;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .verdict-badge::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+        transition: left 0.6s ease;
+    }
+
+    .verdict-badge:hover::before {
+        left: 100%;
+    }
+
+    .verdict-badge.fake {
+        background: linear-gradient(135deg, #ef4444, #dc2626, #b91c1c);
+        color: white;
+        border-color: rgba(239, 68, 68, 0.7);
+        box-shadow: 0 15px 40px rgba(239, 68, 68, 0.4);
+    }
+
+    .verdict-badge.real {
+        background: linear-gradient(135deg, #10b981, #059669, #047857);
+        color: white;
+        border-color: rgba(16, 185, 129, 0.7);
+        box-shadow: 0 15px 40px rgba(16, 185, 129, 0.4);
+    }
+
+    .results-content {
+        background: rgba(15, 23, 42, 0.8);
+        border-radius: 20px;
+        padding: 2.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        margin-bottom: 2rem;
+    }
+
+    .confidence-meter {
+        margin: 2rem 0;
+        padding: 1.5rem;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .meter-label {
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 1rem;
+        font-size: 1.1rem;
+    }
+
+    .meter-bar {
+        width: 100%;
+        height: 20px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        overflow: hidden;
+        margin: 1rem 0;
+        position: relative;
+    }
+
+    .meter-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--primary), var(--secondary));
+        transition: width 1s ease;
+        width: 0%;
+        border-radius: 10px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .meter-fill::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        animation: shimmer 2s infinite;
+    }
+
+    .meter-value {
+        text-align: right;
+        font-weight: 700;
+        color: var(--text-primary);
+        font-size: 1.2rem;
+    }
+
+    .modality-analysis {
+        margin: 2.5rem 0;
+    }
+
+    .modality-analysis h4 {
+        color: var(--text-primary);
+        margin-bottom: 1.5rem;
+        font-size: 1.3rem;
+        border-bottom: 2px solid var(--primary);
+        padding-bottom: 0.5rem;
+        display: inline-block;
+        font-weight: 600;
+    }
+
+    .modality-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.5rem;
+        margin: 1.5rem 0;
+    }
+
+    .modality-item {
+        text-align: center;
+        padding: 1.5rem 1rem;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .modality-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: linear-gradient(90deg, var(--primary), var(--secondary));
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .modality-item:hover {
+        transform: translateY(-5px);
+        border-color: var(--primary);
+        box-shadow: 0 10px 25px rgba(99, 102, 241, 0.2);
+    }
+
+    .modality-item:hover::before {
+        opacity: 1;
+    }
+
+    .modality-name {
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+    }
+
+    .modality-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 1rem;
+    }
+
+    .modality-verdict {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+    }
+
+    .modality-verdict.fake {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+        box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+    }
+
+    .modality-verdict.real {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+    }
+
+    .technical-details {
+        margin-top: 2.5rem;
+    }
+
+    .technical-details h4 {
+        color: var(--text-primary);
+        margin-bottom: 1.5rem;
+        font-size: 1.3rem;
+        border-bottom: 2px solid var(--primary);
+        padding-bottom: 0.5rem;
+        display: inline-block;
+        font-weight: 600;
+    }
+
+    .details-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        margin: 1.5rem 0;
+    }
+
+    .detail-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 1.5rem;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .detail-item:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: var(--primary);
+        transform: translateX(5px);
+    }
+
+    .detail-label {
+        font-weight: 500;
+        color: var(--text-secondary);
+    }
+
+    .detail-value {
+        font-weight: 600;
+        color: var(--text-primary);
+        font-size: 1.1rem;
+    }
+
+    .results-actions {
+        display: flex;
+        gap: 1.5rem;
+        justify-content: center;
+        margin-top: 3rem;
+        padding-top: 3rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .demo-info {
+        padding: 80px 0;
+        background: #1e293b;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 3rem;
+    }
+
+    .info-card {
+        background: rgba(30, 41, 59, 0.95);
+        padding: 2.5rem;
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .info-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--secondary));
+    }
+
+    .info-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+        border-color: var(--primary);
+    }
+
+    .info-card h3 {
+        color: var(--text-primary);
+        margin-bottom: 1.5rem;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .info-card p {
+        color: var(--text-secondary);
+        margin-bottom: 1.5rem;
+        line-height: 1.7;
+        font-size: 1.1rem;
+    }
+
+    .info-card ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .info-card li {
+        padding: 0.75rem 0;
+        color: var(--text-secondary);
+        position: relative;
+        padding-left: 2rem;
+        line-height: 1.6;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        font-size: 1rem;
+    }
+
+    .info-card li:last-child {
+        border-bottom: none;
+    }
+
+    .info-card li:before {
+        content: '✓';
+        position: absolute;
+        left: 0;
+        color: var(--success);
+        font-weight: bold;
+        font-size: 1.1rem;
+    }
+
+    .info-card strong {
+        color: var(--text-primary);
+        font-weight: 600;
+    }
+
+    .metrics-list {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        margin: 2rem 0;
+    }
+
+    .metric-item {
+        text-align: center;
+        padding: 1.5rem 1rem;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .metric-item:hover {
+        transform: scale(1.05);
+        border-color: var(--primary);
+        box-shadow: 0 8px 25px rgba(99, 102, 241, 0.2);
+    }
+
+    .metric-value {
+        font-size: 1.8rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .metric-label {
+        color: var(--text-secondary);
+        font-weight: 500;
+        font-size: 0.9rem;
+    }
+
+    .improvement-notice {
+        margin-top: 2rem;
+        padding: 1.5rem;
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(16, 185, 129, 0.1));
+        border-radius: 12px;
+        border-left: 4px solid var(--primary);
+    }
+
+    .improvement-notice h4 {
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 600;
+    }
+
+    .improvement-notice p {
+        color: var(--text-secondary);
+        margin: 0;
+        font-size: 0.95rem;
+    }
+
+    .btn {
+        padding: 1rem 2rem;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        position: relative;
+        overflow: hidden;
+        font-size: 1rem;
+    }
+
+    .btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .btn:hover::before {
+        left: 100%;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        color: white;
+        box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 15px 40px rgba(99, 102, 241, 0.6);
+    }
+
+    .btn-secondary {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+    }
+
+    .btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.15);
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Enhanced Results Section */
+    .results-summary {
+        background: rgba(15, 23, 42, 0.9);
+        border-radius: 20px;
+        padding: 2.5rem;
+        margin-bottom: 2rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .results-highlight {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .confidence-display {
+        text-align: center;
+        flex: 1;
+    }
+
+    .confidence-value {
+        font-size: 3rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .confidence-label {
+        color: var(--text-secondary);
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+
+    .probability-display {
+        display: flex;
+        gap: 2rem;
+        justify-content: center;
+        margin-top: 1.5rem;
+    }
+
+    .probability-item {
+        text-align: center;
+        padding: 1rem 2rem;
+        border-radius: 15px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .probability-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    }
+
+    .probability-value {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .probability-label {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        font-weight: 600;
+    }
+
+    .fake-probability .probability-value {
+        color: #ef4444;
+    }
+
+    .real-probability .probability-value {
+        color: #10b981;
+    }
+
+    /* Analysis Preview Section */
+    .analysis-preview-section {
+        margin: 2rem 0;
+        text-align: center;
+    }
+
+    .analysis-preview-section h4 {
+        color: var(--text-primary);
+        margin-bottom: 1.5rem;
+        font-size: 1.3rem;
+        font-weight: 600;
+    }
+
+    .analysis-preview-container {
+        display: inline-block;
+        max-width: 400px;
+    }
+
+    .analysis-preview-container .file-preview {
+        max-width: 400px;
+        max-height: 250px;
+    }
+
+    .analysis-preview-container .file-name {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-top: 1rem;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .demo-container {
+            padding: 2rem;
+            margin: 1rem;
+        }
+
+        .modality-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .details-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .results-actions {
+            flex-direction: column;
+        }
+
+        .analysis-steps {
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .analysis-steps::before {
+            display: none;
+        }
+
+        .demo-hero h1 {
+            font-size: 2.5rem;
+        }
+
+        .verdict-badge {
+            font-size: 1.5rem;
+            padding: 1rem 2rem;
+        }
+
+        .results-highlight {
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .probability-display {
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .file-preview {
+            max-width: 250px;
+            max-height: 150px;
+        }
+
+        .analysis-preview-container .file-preview {
+            max-width: 300px;
+            max-height: 200px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .modality-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .metrics-list {
+            grid-template-columns: 1fr;
+        }
+
+        .demo-container {
+            padding: 1.5rem;
+        }
+
+        .verdict-badge {
+            font-size: 1.2rem;
+            padding: 0.8rem 1.5rem;
+        }
+
+        .file-preview {
+            max-width: 200px;
+            max-height: 120px;
+        }
+
+        .analysis-preview-container .file-preview {
+            max-width: 250px;
+            max-height: 150px;
+        }
+    }
+</style>
+
+<!-- Hero Section -->
+<section class="demo-hero">
+    <div class="container">
+        <h1>Deepfake Detection Demo</h1>
+        <p>Upload a video to analyze it with our advanced deepfake detection technology</p>
+    </div>
+</section>
+
+<!-- Demo Interface -->
+<section class="demo-interface">
+    <div class="container">
+        <div class="demo-container">
+            <!-- Upload Section -->
+            <div class="upload-section">
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">🎬</div>
+                    <h3>Upload Video for Analysis</h3>
+                    <p>Drag & drop your video file here or click to browse</p>
+                    <p class="file-size-info">Supported formats: MP4, AVI, MOV, MKV, WEBM • Max 100MB</p>
+                    <input type="file" id="videoFile" accept=".mp4,.avi,.mov,.mkv,.webm" hidden>
+                    <button class="btn btn-primary upload-button" id="uploadButton">
+                        <i class="fas fa-cloud-upload-alt"></i>Choose Video File
+                    </button>
+                </div>
+                
+                <!-- File Preview Container -->
+                <div class="file-preview-container" id="filePreviewContainer">
+                    <div class="file-preview" id="filePreview">
+                        <!-- Preview will be inserted here -->
+                    </div>
+                    <p class="file-name" id="fileName"></p>
+                </div>
+                
+                <div class="upload-progress" id="uploadProgress" style="display: none;">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <p class="progress-text" id="progressText">Uploading...</p>
+                </div>
+            </div>
+
+            <!-- Analysis Section -->
+            <div class="analysis-section" id="analysisSection" style="display: none;">
+                <div class="analysis-header">
+                    <h3>Analysis in Progress</h3>
+                    
+                    <!-- Video Preview During Analysis - ONLY ONE PREVIEW NOW -->
+                    <div class="analysis-preview-section">
+                        <h4>Analyzing Video:</h4>
+                        <div class="analysis-preview-container">
+                            <div class="file-preview" id="analysisFilePreview">
+                                <!-- Analysis preview will be inserted here -->
+                            </div>
+                            <p class="file-name" id="analysisFileName"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="analysis-steps">
+                        <div class="step active" id="step1">
+                            <span class="step-number">1</span>
+                            <span class="step-text">Frame Extraction</span>
+                        </div>
+                        <div class="step" id="step2">
+                            <span class="step-number">2</span>
+                            <span class="step-text">Multi-Modal Analysis</span>
+                        </div>
+                        <div class="step" id="step3">
+                            <span class="step-number">3</span>
+                            <span class="step-text">Fusion & Decision</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="analysis-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="analysisProgressFill"></div>
+                    </div>
+                    <p class="analysis-status" id="analysisStatus">Initializing analysis...</p>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div class="results-section" id="resultsSection" style="display: none;">
+                <div class="results-header">
+                    <h3>Analysis Results</h3>
+                    <div class="verdict-badge" id="verdictBadge">
+                        <span id="verdictText">Processing...</span>
+                    </div>
+                </div>
+                
+                <div class="results-summary">
+                    <div class="results-highlight">
+                        <div class="confidence-display">
+                            <div class="confidence-value" id="confidenceValue">--%</div>
+                            <div class="confidence-label">Confidence Level</div>
+                        </div>
+                        <div class="probability-display">
+                            <div class="probability-item fake-probability">
+                                <div class="probability-value" id="fakeProbability">--%</div>
+                                <div class="probability-label">Fake Probability</div>
+                            </div>
+                            <div class="probability-item real-probability">
+                                <div class="probability-value" id="realProbability">--%</div>
+                                <div class="probability-label">Real Probability</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="confidence-meter">
+                        <div class="meter-bar">
+                            <div class="meter-fill" id="confidenceFill"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="results-content">
+                    <div class="modality-analysis">
+                        <h4>Multi-Modal Analysis</h4>
+                        <div class="modality-grid">
+                            <div class="modality-item">
+                                <div class="modality-name">CLAHE Analysis</div>
+                                <div class="modality-value" id="claheValue">--</div>
+                                <div class="modality-verdict" id="claheVerdict">--</div>
+                            </div>
+                            <div class="modality-item">
+                                <div class="modality-name">Edge Analysis</div>
+                                <div class="modality-value" id="edgeValue">--</div>
+                                <div class="modality-verdict" id="edgeVerdict">--</div>
+                            </div>
+                            <div class="modality-item">
+                                <div class="modality-name">FFT Analysis</div>
+                                <div class="modality-value" id="fftValue">--</div>
+                                <div class="modality-verdict" id="fftVerdict">--</div>
+                            </div>
+                            <div class="modality-item">
+                                <div class="modality-name">LSTM Fusion</div>
+                                <div class="modality-value" id="lstmValue">--</div>
+                                <div class="modality-verdict" id="lstmVerdict">--</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="technical-details">
+                        <h4>Technical Details</h4>
+                        <div class="details-grid">
+                            <div class="detail-item">
+                                <span class="detail-label">Processing Time:</span>
+                                <span class="detail-value" id="processingTime">--</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Sequences Analyzed:</span>
+                                <span class="detail-value" id="sequencesAnalyzed">--</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Fusion Score:</span>
+                                <span class="detail-value" id="fusionScore">--</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Modality Consensus:</span>
+                                <span class="detail-value" id="consensusValue">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="results-actions">
+                    <button class="btn btn-secondary" id="analyzeAnother">
+                        <i class="fas fa-redo"></i>Analyze Another Video
+                    </button>
+                    <button class="btn btn-primary" id="downloadReport">
+                        <i class="fas fa-download"></i>Download Detailed Report
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Demo Info Section -->
+<section class="demo-info">
+    <div class="container">
+        <div class="info-grid">
+            <div class="info-card">
+                <h3>Advanced Detection Technology</h3>
+                <p>Our enhanced system uses parallel processing and improved algorithms:</p>
+                <ul>
+                    <li><strong>CLAHE Analysis:</strong> Enhanced texture analysis for facial anomalies</li>
+                    <li><strong>Edge Detection:</strong> Canny + Sobel for unnatural boundaries</li>
+                    <li><strong>FFT Analysis:</strong> Corrected frequency domain pattern detection</li>
+                    <li><strong>LSTM Fusion:</strong> Temporal sequence analysis with enhanced accuracy</li>
+                </ul>
+            </div>
+            <div class="info-card">
+                <h3>Performance Features</h3>
+                <div class="metrics-list">
+                    <div class="metric-item">
+                        <span class="metric-value">16 Frames</span>
+                        <span class="metric-label">Per Analysis</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-value">5-Sequence</span>
+                        <span class="metric-label">LSTM Processing</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-value">Parallel</span>
+                        <span class="metric-label">Multi-Modal Analysis</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-value">&lt;45s</span>
+                        <span class="metric-label">Average Processing</span>
+                    </div>
+                </div>
+                <div class="improvement-notice">
+                    <h4>🎯 Enhanced Accuracy</h4>
+                    <p>Ensemble model predictions of real/fake detection</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Get DOM elements
+    const uploadButton = document.getElementById('uploadButton');
+    const videoFileInput = document.getElementById('videoFile');
+    const uploadArea = document.getElementById('uploadArea');
+    const uploadProgress = document.getElementById('uploadProgress');
+    const progressFill = document.getElementById('progressFill');
+    const progressText = document.getElementById('progressText');
+    const analysisSection = document.getElementById('analysisSection');
+    const analysisProgressFill = document.getElementById('analysisProgressFill');
+    const analysisStatus = document.getElementById('analysisStatus');
+    const resultsSection = document.getElementById('resultsSection');
+    
+    // File preview elements
+    const filePreviewContainer = document.getElementById('filePreviewContainer');
+    const filePreview = document.getElementById('filePreview');
+    const fileName = document.getElementById('fileName');
+    
+    // Analysis preview elements
+    const analysisFilePreview = document.getElementById('analysisFilePreview');
+    const analysisFileName = document.getElementById('analysisFileName');
+    
+    // Steps for analysis progress
+    const step1 = document.getElementById('step1');
+    const step2 = document.getElementById('step2');
+    const step3 = document.getElementById('step3');
+    
+    // Results elements
+    const verdictBadge = document.getElementById('verdictBadge');
+    const verdictText = document.getElementById('verdictText');
+    const confidenceFill = document.getElementById('confidenceFill');
+    const confidenceValue = document.getElementById('confidenceValue');
+    const claheValue = document.getElementById('claheValue');
+    const edgeValue = document.getElementById('edgeValue');
+    const fftValue = document.getElementById('fftValue');
+    const lstmValue = document.getElementById('lstmValue');
+    const claheVerdict = document.getElementById('claheVerdict');
+    const edgeVerdict = document.getElementById('edgeVerdict');
+    const fftVerdict = document.getElementById('fftVerdict');
+    const lstmVerdict = document.getElementById('lstmVerdict');
+    const processingTime = document.getElementById('processingTime');
+    const sequencesAnalyzed = document.getElementById('sequencesAnalyzed');
+    const fusionScore = document.getElementById('fusionScore');
+    const consensusValue = document.getElementById('consensusValue');
+    const fakeProbability = document.getElementById('fakeProbability');
+    const realProbability = document.getElementById('realProbability');
+    
+    // Buttons
+    const analyzeAnotherBtn = document.getElementById('analyzeAnother');
+    const downloadReportBtn = document.getElementById('downloadReport');
+
+    // Store current file and analysis data for detailed report
+    let currentFile = null;
+    let currentAnalysisData = null;
+
+    // Event listener for upload button
+    uploadButton.addEventListener('click', function() {
+        videoFileInput.click();
+    });
+
+    // Event listener for file selection
+    videoFileInput.addEventListener('change', function(e) {
+        if (e.target.files.length > 0) {
+            const file = e.target.files[0];
+            currentFile = file; // Store the file for later use
+            showFilePreview(file);
+            handleFileUpload(file);
+        }
+    });
+
+    // Enhanced Drag and drop functionality with visual feedback
+    uploadArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        uploadArea.classList.add('drag-over');
+    });
+
+    uploadArea.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('drag-over');
+    });
+
+    uploadArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('drag-over');
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            const file = files[0];
+            currentFile = file; // Store the file for later use
+            showFilePreview(file);
+            handleFileUpload(file);
+        }
+    });
+
+    // Function to show file preview
+    function showFilePreview(file) {
+        // Clear previous preview
+        filePreview.innerHTML = '';
+        fileName.textContent = '';
+        
+        // Show file name
+        fileName.textContent = file.name;
+        
+        // Create preview based on file type
+        if (file.type.startsWith('video/')) {
+            const video = document.createElement('video');
+            video.controls = true;
+            video.muted = true;
+            video.style.width = '100%';
+            video.style.height = '100%';
+            video.style.objectFit = 'cover';
+            video.innerHTML = 'Your browser does not support the video tag.';
+            
+            const source = document.createElement('source');
+            source.src = URL.createObjectURL(file);
+            source.type = file.type;
+            
+            video.appendChild(source);
+            filePreview.appendChild(video);
+            
+            // Add file type badge
+            const badge = document.createElement('div');
+            badge.className = 'file-type-badge';
+            badge.textContent = 'Video';
+            filePreview.appendChild(badge);
+            
+        } else if (file.type.startsWith('image/')) {
+            const img = document.createElement('img');
+            img.src = URL.createObjectURL(file);
+            img.alt = 'Selected file preview';
+            img.style.width = '100%';
+            img.style.height = '100%';
+            img.style.objectFit = 'cover';
+            filePreview.appendChild(img);
+            
+            // Add file type badge
+            const badge = document.createElement('div');
+            badge.className = 'file-type-badge';
+            badge.textContent = 'Image';
+            filePreview.appendChild(badge);
+        } else {
+            // For unsupported file types, show a generic icon
+            const icon = document.createElement('div');
+            icon.innerHTML = '📁';
+            icon.style.fontSize = '3rem';
+            icon.style.color = 'var(--text-secondary)';
+            icon.style.display = 'flex';
+            icon.style.alignItems = 'center';
+            icon.style.justifyContent = 'center';
+            icon.style.height = '100%';
+            filePreview.appendChild(icon);
+            
+            // Add file type badge
+            const badge = document.createElement('div');
+            badge.className = 'file-type-badge';
+            badge.textContent = 'File';
+            filePreview.appendChild(badge);
+        }
+        
+        // Show preview container and update upload area
+        filePreviewContainer.style.display = 'block';
+        uploadArea.classList.add('has-file');
+    }
+
+    // Function to create analysis preview - ONLY ONE PREVIEW NOW
+    function createAnalysisPreview(file) {
+        // Clear previous analysis preview
+        analysisFilePreview.innerHTML = '';
+        analysisFileName.textContent = '';
+        
+        // Show file name
+        analysisFileName.textContent = file.name;
+        
+        // Create preview based on file type
+        if (file.type.startsWith('video/')) {
+            const video = document.createElement('video');
+            video.controls = true;
+            video.muted = true;
+            video.autoplay = true;
+            video.loop = true;
+            video.style.width = '100%';
+            video.style.height = '100%';
+            video.style.objectFit = 'cover';
+            video.innerHTML = 'Your browser does not support the video tag.';
+            
+            const source = document.createElement('source');
+            source.src = URL.createObjectURL(file);
+            source.type = file.type;
+            
+            video.appendChild(source);
+            analysisFilePreview.appendChild(video);
+            
+            // Add file type badge
+            const badge = document.createElement('div');
+            badge.className = 'file-type-badge';
+            badge.textContent = 'Video';
+            analysisFilePreview.appendChild(badge);
+            
+        } else if (file.type.startsWith('image/')) {
+            const img = document.createElement('img');
+            img.src = URL.createObjectURL(file);
+            img.alt = 'Selected file preview';
+            img.style.width = '100%';
+            img.style.height = '100%';
+            img.style.objectFit = 'cover';
+            analysisFilePreview.appendChild(img);
+            
+            // Add file type badge
+            const badge = document.createElement('div');
+            badge.className = 'file-type-badge';
+            badge.textContent = 'Image';
+            analysisFilePreview.appendChild(badge);
+        } else {
+            // For unsupported file types, show a generic icon
+            const icon = document.createElement('div');
+            icon.innerHTML = '📁';
+            icon.style.fontSize = '3rem';
+            icon.style.color = 'var(--text-secondary)';
+            icon.style.display = 'flex';
+            icon.style.alignItems = 'center';
+            icon.style.justifyContent = 'center';
+            icon.style.height = '100%';
+            analysisFilePreview.appendChild(icon);
+            
+            // Add file type badge
+            const badge = document.createElement('div');
+            badge.className = 'file-type-badge';
+            badge.textContent = 'File';
+            analysisFilePreview.appendChild(badge);
+        }
+    }
+
+    // Handle file upload - FIXED: Only show one preview
+    function handleFileUpload(file) {
+        // Validate file type
+        const validTypes = ['mp4', 'avi', 'mov', 'mkv', 'webm'];
+        const fileExtension = file.name.split('.').pop().toLowerCase();
+        
+        if (!validTypes.includes(fileExtension)) {
+            alert('Please select a valid video file (MP4, AVI, MOV, MKV, WEBM)');
+            return;
+        }
+
+        // Validate file size (100MB)
+        if (file.size > 100 * 1024 * 1024) {
+            alert('File size must be less than 100MB');
+            return;
+        }
+
+        // Show upload progress - HIDE the initial preview during upload
+        uploadArea.style.display = 'none';
+        filePreviewContainer.style.display = 'none'; // Hide the initial preview
+        uploadProgress.style.display = 'block';
+
+        // Create FormData for file upload
+        const formData = new FormData();
+        formData.append('file', file);
+
+        // Upload file
+        fetch('/upload', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                progressFill.style.width = '100%';
+                progressText.textContent = 'Upload complete!';
+                
+                // Start analysis after short delay
+                setTimeout(() => {
+                    startAnalysis(data.file_id);
+                }, 1000);
+            } else {
+                throw new Error(data.error || 'Upload failed');
+            }
+        })
+        .catch(error => {
+            console.error('Upload error:', error);
+            progressText.textContent = 'Upload failed: ' + error.message;
+            progressFill.style.background = '#ef4444';
+            
+            // Reset after error
+            setTimeout(() => {
+                resetUploadSection();
+            }, 3000);
+        });
+
+        // Simulate upload progress
+        let progress = 0;
+        const progressInterval = setInterval(() => {
+            progress += 5;
+            progressFill.style.width = progress + '%';
+            progressText.textContent = `Uploading... ${progress}%`;
+            
+            if (progress >= 90) {
+                clearInterval(progressInterval);
+            }
+        }, 100);
+    }
+
+    // Start analysis process - FIXED: Only show one preview
+    function startAnalysis(fileId) {
+        // Create analysis preview from the stored file - ONLY ONE PREVIEW
+        if (currentFile) {
+            createAnalysisPreview(currentFile);
+        }
+        
+        // Show analysis section - ONLY SHOW ANALYSIS PREVIEW
+        uploadProgress.style.display = 'none';
+        analysisSection.style.display = 'block';
+
+        // Start analysis steps
+        updateAnalysisStep(1, 'Extracting 16 frames from video...');
+        
+        setTimeout(() => {
+            updateAnalysisStep(2, 'Running parallel multi-modal analysis...');
+        }, 2000);
+
+        setTimeout(() => {
+            updateAnalysisStep(3, 'Performing LSTM fusion & final decision...');
+        }, 4000);
+
+        // Send analysis request
+        fetch('/analyze', {
+            method: 'POST'
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            
+            // Store analysis data for detailed report
+            currentAnalysisData = data;
+            
+            // Show results
+            showResults(data);
+        })
+        .catch(error => {
+            console.error('Analysis error:', error);
+            analysisStatus.textContent = 'Analysis failed: ' + error.message;
+            analysisProgressFill.style.background = '#ef4444';
+            
+            // Reset after error
+            setTimeout(() => {
+                resetUploadSection();
+            }, 5000);
+        });
+
+        // Simulate analysis progress
+        let analysisProgress = 0;
+        const analysisInterval = setInterval(() => {
+            analysisProgress += 2;
+            analysisProgressFill.style.width = analysisProgress + '%';
+            
+            if (analysisProgress >= 100) {
+                clearInterval(analysisInterval);
+                analysisStatus.textContent = 'Finalizing results...';
+            }
+        }, 100);
+    }
+
+    // Update analysis step
+    function updateAnalysisStep(step, status) {
+        // Reset all steps
+        step1.classList.remove('active', 'completed');
+        step2.classList.remove('active', 'completed');
+        step3.classList.remove('active', 'completed');
+        
+        // Activate current step
+        if (step >= 1) {
+            step1.classList.add('active');
+            if (step > 1) step1.classList.add('completed');
+        }
+        if (step >= 2) {
+            step2.classList.add('active');
+            if (step > 2) step2.classList.add('completed');
+        }
+        if (step >= 3) {
+            step3.classList.add('active');
+        }
+        
+        analysisStatus.textContent = status;
+    }
+
+    // Show results
+    function showResults(data) {
+        analysisSection.style.display = 'none';
+        resultsSection.style.display = 'block';
+
+        // Set verdict
+        verdictText.textContent = data.verdict;
+        verdictBadge.className = 'verdict-badge ' + data.verdict.toLowerCase();
+
+        // Set confidence
+        const confidencePercent = Math.round(data.confidence * 100);
+        confidenceFill.style.width = confidencePercent + '%';
+        confidenceValue.textContent = confidencePercent + '%';
+        
+        // Set confidence color based on level
+        if (data.confidence_level === 'HIGH' || data.confidence_level === 'VERY HIGH') {
+            confidenceFill.style.background = 'linear-gradient(90deg, #10b981, #059669)';
+        } else if (data.confidence_level === 'MEDIUM') {
+            confidenceFill.style.background = 'linear-gradient(90deg, #f59e0b, #d97706)';
+        } else {
+            confidenceFill.style.background = 'linear-gradient(90deg, #ef4444, #dc2626)';
+        }
+
+        // Set modality analysis
+        if (data.modality_analysis) {
+            const mod = data.modality_analysis;
+            
+            claheValue.textContent = mod.clahe.average.toFixed(3);
+            edgeValue.textContent = mod.edge.average.toFixed(3);
+            fftValue.textContent = mod.fft.average.toFixed(3);
+            lstmValue.textContent = mod.lstm.average.toFixed(3);
+            
+            claheVerdict.textContent = mod.clahe.vote;
+            edgeVerdict.textContent = mod.edge.vote;
+            fftVerdict.textContent = mod.fft.vote;
+            lstmVerdict.textContent = mod.lstm.vote;
+            
+            claheVerdict.className = 'modality-verdict ' + mod.clahe.vote.toLowerCase();
+            edgeVerdict.className = 'modality-verdict ' + mod.edge.vote.toLowerCase();
+            fftVerdict.className = 'modality-verdict ' + mod.fft.vote.toLowerCase();
+            lstmVerdict.className = 'modality-verdict ' + mod.lstm.vote.toLowerCase();
+            
+            consensusValue.textContent = mod.consensus + ' (' + mod.fake_votes + '/4 modalities)';
+        }
+
+        // Set technical details
+        processingTime.textContent = data.processing_time.toFixed(1) + 's';
+        sequencesAnalyzed.textContent = data.num_sequences;
+        fusionScore.textContent = data.raw_score.toFixed(4);
+        
+        if (data.probabilities) {
+            fakeProbability.textContent = (data.probabilities.fake_probability * 100).toFixed(1) + '%';
+            realProbability.textContent = (data.probabilities.real_probability * 100).toFixed(1) + '%';
+        }
+    }
+
+    // Enhanced download report function with all details
+    function downloadDetailedReport() {
+        if (!currentAnalysisData) {
+            alert('No analysis data available to download');
+            return;
+        }
+
+        const data = currentAnalysisData;
+        const fileName = currentFile ? currentFile.name : 'unknown-video';
+        
+        let reportContent = `DEEPSHIELD AI - DEEPFAKE DETECTION ANALYSIS REPORT\n`;
+        reportContent += `==================================================\n\n`;
+        
+        // Basic Information
+        reportContent += `VIDEO INFORMATION:\n`;
+        reportContent += `-------------------\n`;
+        reportContent += `File Name: ${fileName}\n`;
+        reportContent += `Analysis Date: ${new Date().toLocaleString()}\n`;
+        reportContent += `Processing Time: ${data.processing_time ? data.processing_time.toFixed(1) + 's' : 'N/A'}\n\n`;
+        
+        // Final Verdict
+        reportContent += `FINAL ANALYSIS RESULT:\n`;
+        reportContent += `----------------------\n`;
+        reportContent += `Verdict: ${data.verdict || 'N/A'}\n`;
+        reportContent += `Confidence Level: ${data.confidence_level || 'N/A'}\n`;
+        reportContent += `Confidence Score: ${data.confidence ? (data.confidence * 100).toFixed(1) + '%' : 'N/A'}\n`;
+        reportContent += `Raw Fusion Score: ${data.raw_score ? data.raw_score.toFixed(4) : 'N/A'}\n\n`;
+        
+        // Probability Analysis
+        reportContent += `PROBABILITY ANALYSIS:\n`;
+        reportContent += `---------------------\n`;
+        if (data.probabilities) {
+            reportContent += `Fake Probability: ${(data.probabilities.fake_probability * 100).toFixed(1)}%\n`;
+            reportContent += `Real Probability: ${(data.probabilities.real_probability * 100).toFixed(1)}%\n`;
+        } else {
+            reportContent += `Fake Probability: N/A\n`;
+            reportContent += `Real Probability: N/A\n`;
+        }
+        reportContent += `\n`;
+        
+        // Multi-Modal Analysis Details
+        reportContent += `MULTI-MODAL ANALYSIS DETAILS:\n`;
+        reportContent += `------------------------------\n`;
+        if (data.modality_analysis) {
+            const mod = data.modality_analysis;
+            
+            reportContent += `CLAHE Analysis:\n`;
+            reportContent += `  - Average Score: ${mod.clahe.average.toFixed(4)}\n`;
+            reportContent += `  - Vote: ${mod.clahe.vote}\n`;
+            reportContent += `  - Interpretation: ${mod.clahe.average > 0.5 ? 'Indicates FAKE content' : 'Indicates REAL content'}\n\n`;
+            
+            reportContent += `Edge Analysis:\n`;
+            reportContent += `  - Average Score: ${mod.edge.average.toFixed(4)}\n`;
+            reportContent += `  - Vote: ${mod.edge.vote}\n`;
+            reportContent += `  - Interpretation: ${mod.edge.average > 0.5 ? 'Indicates FAKE content' : 'Indicates REAL content'}\n\n`;
+            
+            reportContent += `FFT Analysis:\n`;
+            reportContent += `  - Average Score: ${mod.fft.average.toFixed(4)}\n`;
+            reportContent += `  - Vote: ${mod.fft.vote}\n`;
+            reportContent += `  - Interpretation: ${mod.fft.average > 0.5 ? 'Indicates FAKE content' : 'Indicates REAL content'}\n\n`;
+            
+            reportContent += `LSTM Fusion Analysis:\n`;
+            reportContent += `  - Average Score: ${mod.lstm.average.toFixed(4)}\n`;
+            reportContent += `  - Vote: ${mod.lstm.vote}\n`;
+            reportContent += `  - Interpretation: ${mod.lstm.average > 0.5 ? 'Indicates FAKE content' : 'Indicates REAL content'}\n\n`;
+            
+            reportContent += `MODALITY CONSENSUS:\n`;
+            reportContent += `  - Fake Votes: ${mod.fake_votes}/4 modalities\n`;
+            reportContent += `  - Final Consensus: ${mod.consensus}\n\n`;
+        }
+        
+        // Technical Details
+        reportContent += `TECHNICAL DETAILS:\n`;
+        reportContent += `------------------\n`;
+        reportContent += `Frames Analyzed: ${data.frames_used || 16}\n`;
+        reportContent += `Sequence Length: ${data.sequence_length || 5}\n`;
+        reportContent += `Sequences Processed: ${data.num_sequences || 'N/A'}\n`;
+        reportContent += `Edge Detection Method: ${data.edge_method || 'Canny+Sobel'}\n\n`;
+        
+        // Sequence Analysis
+        reportContent += `SEQUENCE ANALYSIS:\n`;
+        reportContent += `------------------\n`;
+        if (data.sequence_analysis) {
+            const seq = data.sequence_analysis;
+            reportContent += `Fake Sequences: ${seq.fake_sequences || 'N/A'}\n`;
+            reportContent += `Real Sequences: ${seq.real_sequences || 'N/A'}\n`;
+            reportContent += `Fake Sequence Percentage: ${seq.fake_percentage ? (seq.fake_percentage * 100).toFixed(1) + '%' : 'N/A'}\n`;
+            reportContent += `Average LSTM Score: ${seq.average_lstm_score ? seq.average_lstm_score.toFixed(4) : 'N/A'}\n\n`;
+            
+            if (seq.sequence_predictions && seq.sequence_predictions.length > 0) {
+                reportContent += `Individual Sequence Predictions:\n`;
+                seq.sequence_predictions.forEach((pred, index) => {
+                    reportContent += `  Sequence ${index + 1}: ${pred.toFixed(4)} (${pred > 0.5 ? 'FAKE' : 'REAL'})\n`;
+                });
+                reportContent += `\n`;
+            }
+        }
+        
+        // System Information
+        reportContent += `SYSTEM INFORMATION:\n`;
+        reportContent += `-------------------\n`;
+        reportContent += `Analysis Engine: DeepShield AI Enhanced Deepfake Detection\n`;
+        reportContent += `Model Version: Enhanced Multi-Modal Fusion v2.0\n`;
+        reportContent += `Detection Method: Parallel Multi-Modal Analysis\n`;
+        reportContent += `Logic Preserved: ${data.logic_preserved ? 'Yes' : 'No'}\n\n`;
+        
+        // Interpretation Guide
+        reportContent += `INTERPRETATION GUIDE:\n`;
+        reportContent += `---------------------\n`;
+        reportContent += `- Scores closer to 1.0 indicate higher probability of being FAKE\n`;
+        reportContent += `- Scores closer to 0.0 indicate higher probability of being REAL\n`;
+        reportContent += `- Confidence > 85%: VERY HIGH reliability\n`;
+        reportContent += `- Confidence > 75%: HIGH reliability\n`;
+        reportContent += `- Confidence > 65%: MEDIUM reliability\n`;
+        reportContent += `- Confidence < 65%: LOW reliability\n\n`;
+        
+        reportContent += `END OF REPORT\n`;
+        reportContent += `=============\n`;
+        reportContent += `Generated by DeepShield AI - Advanced Deepfake Detection System`;
+
+        const blob = new Blob([reportContent], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `deepshield-detailed-report-${fileName.replace(/\.[^/.]+$/, "")}-${Date.now()}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    // Reset upload section
+    function resetUploadSection() {
+        uploadArea.style.display = 'block';
+        uploadProgress.style.display = 'none';
+        analysisSection.style.display = 'none';
+        resultsSection.style.display = 'none';
+        filePreviewContainer.style.display = 'none';
+        
+        // Reset upload area styling
+        uploadArea.classList.remove('has-file');
+        
+        // Clear preview
+        filePreview.innerHTML = '';
+        fileName.textContent = '';
+        
+        // Clear current file and data
+        currentFile = null;
+        currentAnalysisData = null;
+        
+        progressFill.style.width = '0%';
+        progressFill.style.background = 'linear-gradient(90deg, var(--primary), var(--secondary))';
+        progressText.textContent = 'Uploading...';
+        
+        analysisProgressFill.style.width = '0%';
+        analysisProgressFill.style.background = 'linear-gradient(90deg, var(--primary), var(--secondary))';
+        
+        // Reset steps
+        step1.classList.remove('active', 'completed');
+        step2.classList.remove('active', 'completed');
+        step3.classList.remove('active', 'completed');
+        step1.classList.add('active');
+        
+        videoFileInput.value = '';
+    }
+
+    // Event listeners for buttons
+    analyzeAnotherBtn.addEventListener('click', resetUploadSection);
+    
+    downloadReportBtn.addEventListener('click', downloadDetailedReport);
+});
+</script>
+{% endblock %}

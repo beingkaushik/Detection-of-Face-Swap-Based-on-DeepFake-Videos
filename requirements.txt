@@ -1,0 +1,43 @@
+Flask==2.3.3
+Werkzeug==2.3.7
+Jinja2==3.1.2
+tensorflow-cpu==2.13.0
+keras==2.13.1
+opencv-python==4.8.1.78
+numpy==1.24.3
+scipy==1.11.2
+Pillow==10.0.0
+moviepy==1.0.3
+python-multipart==0.0.6
+gunicorn==21.2.0
+
+
+# === Build Essentials (must be at top for Render) ===
+setuptools>=65.0.0
+wheel
+pip
+
+# === Core Flask Dependencies ===
+Flask==2.3.3
+Werkzeug==2.3.7
+Jinja2==3.1.2
+gunicorn==21.2.0  # Production WSGI server for Flask apps on Render
+
+# === TensorFlow (CPU version - compatible with Python 3.10) ===
+tensorflow-cpu==2.20.0
+keras==2.13.1  # Works fine with TensorFlow 2.20
+
+# === Computer Vision ===
+opencv-python==4.8.1.78
+numpy==1.24.3
+scipy==1.11.2
+Pillow==10.0.0
+
+# === Video Processing ===
+moviepy==1.0.3
+
+# === Utilities ===
+python-multipart==0.0.6
+
+# === Windows Compatibility (ignored on Render) ===
+pywin32==306 ; sys_platform == 'win32'

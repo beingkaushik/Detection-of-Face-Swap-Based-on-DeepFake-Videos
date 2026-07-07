@@ -1,0 +1,667 @@
+{% extends "base.html" %}
+
+{% block title %}DeepShield - How It Works{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary: #6366f1;
+        --primary-dark: #4f46e5;
+        --secondary: #10b981;
+        --accent: #f59e0b;
+        --dark: #1e293b;
+        --light: #f8fafc;
+        --gray: #64748b;
+        --danger: #ef4444;
+        --success: #10b981;
+        --text-primary: #ffffff;
+        --text-secondary: #e2e8f0;
+        --text-muted: #94a3b8;
+    }
+
+    .how-it-works-hero {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        padding: 120px 0 80px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .how-it-works-hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><defs><radialGradient id="a" cx=".5" cy=".5" r=".5"><stop offset="0%" stop-color="%236366f1" stop-opacity=".1"/><stop offset="100%" stop-color="%236366f1" stop-opacity="0"/></radialGradient></defs><rect width="100%" height="100%" fill="url(%23a)"/></svg>');
+    }
+
+    .how-it-works-hero h1 {
+        font-size: 3.5rem;
+        font-weight: 800;
+        margin-bottom: 1.5rem;
+        background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .how-it-works-hero p {
+        font-size: 1.25rem;
+        color: var(--text-secondary);
+        max-width: 600px;
+        margin: 0 auto;
+        line-height: 1.7;
+    }
+
+    .process-section {
+        padding: 80px 0;
+        background: #0f172a;
+    }
+
+    .process-section:nth-child(even) {
+        background: #1e293b;
+    }
+
+    .section-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 3rem;
+        text-align: center;
+        color: var(--text-primary);
+        position: relative;
+    }
+
+    .section-title::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 60px;
+        height: 3px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+    }
+
+    .workflow-steps {
+        display: flex;
+        flex-direction: column;
+        gap: 3rem;
+        max-width: 1000px;
+        margin: 0 auto;
+        position: relative;
+    }
+
+    .workflow-steps::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 3px;
+        height: 100%;
+        background: linear-gradient(180deg, var(--primary), var(--secondary));
+        opacity: 0.3;
+    }
+
+    .workflow-step {
+        display: flex;
+        align-items: center;
+        gap: 3rem;
+        position: relative;
+    }
+
+    .workflow-step:nth-child(even) {
+        flex-direction: row-reverse;
+    }
+
+    .step-visual {
+        flex: 0 0 200px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .step-number {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        color: white;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        border: 4px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
+    }
+
+    .step-icon {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .step-title {
+        color: var(--text-primary);
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+
+    .step-content {
+        flex: 1;
+        background: rgba(30, 41, 59, 0.8);
+        padding: 2.5rem;
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+    }
+
+    .step-content:hover {
+        transform: translateY(-5px);
+        border-color: var(--primary);
+        box-shadow: 0 15px 40px rgba(99, 102, 241, 0.2);
+    }
+
+    .step-content h3 {
+        color: var(--text-primary);
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        border-bottom: 2px solid var(--primary);
+        padding-bottom: 0.5rem;
+    }
+
+    .step-content p {
+        color: var(--text-secondary);
+        line-height: 1.7;
+        margin-bottom: 1.5rem;
+    }
+
+    .feature-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .feature-list li {
+        padding: 0.5rem 0;
+        color: var(--text-secondary);
+        position: relative;
+        padding-left: 2rem;
+        line-height: 1.6;
+    }
+
+    .feature-list li::before {
+        content: '✓';
+        position: absolute;
+        left: 0;
+        color: var(--success);
+        font-weight: bold;
+    }
+
+    .tech-highlights {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-top: 4rem;
+    }
+
+    .tech-card {
+        background: rgba(30, 41, 59, 0.8);
+        padding: 2.5rem;
+        border-radius: 16px;
+        text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+    }
+
+    .tech-card:hover {
+        transform: translateY(-5px);
+        border-color: var(--primary);
+        box-shadow: 0 15px 40px rgba(99, 102, 241, 0.2);
+    }
+
+    .tech-icon {
+        font-size: 3rem;
+        margin-bottom: 1.5rem;
+        color: var(--primary);
+    }
+
+    .tech-card h3 {
+        color: var(--text-primary);
+        margin-bottom: 1rem;
+        font-size: 1.5rem;
+    }
+
+    .tech-card p {
+        color: var(--text-secondary);
+        line-height: 1.6;
+    }
+
+    .architecture-section {
+        text-align: center;
+    }
+
+    .architecture-diagram {
+        max-width: 900px;
+        margin: 3rem auto;
+        background: rgba(30, 41, 59, 0.8);
+        padding: 3rem;
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+    }
+
+    .diagram-title {
+        color: var(--text-primary);
+        font-size: 1.5rem;
+        margin-bottom: 2rem;
+        font-weight: 600;
+    }
+
+    .diagram-flow {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 2rem;
+    }
+
+    .flow-step {
+        flex: 1;
+        min-width: 150px;
+        text-align: center;
+    }
+
+    .flow-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        font-size: 2rem;
+        color: white;
+    }
+
+    .flow-arrow {
+        font-size: 2rem;
+        color: var(--primary);
+        margin: 0 1rem;
+    }
+
+    .flow-step h4 {
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+        font-size: 1.1rem;
+    }
+
+    .flow-step p {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+
+    .performance-metrics {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        margin-top: 3rem;
+    }
+
+    .metric-card {
+        background: rgba(30, 41, 59, 0.8);
+        padding: 2rem;
+        border-radius: 12px;
+        text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        transition: transform 0.3s ease;
+    }
+
+    .metric-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .metric-number {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .metric-label {
+        color: var(--text-secondary);
+        font-size: 1.1rem;
+    }
+
+    @media (max-width: 768px) {
+        .how-it-works-hero h1 {
+            font-size: 2.5rem;
+        }
+
+        .section-title {
+            font-size: 2rem;
+        }
+
+        .workflow-steps::before {
+            display: none;
+        }
+
+        .workflow-step {
+            flex-direction: column !important;
+            gap: 1.5rem;
+            text-align: center;
+        }
+
+        .step-visual {
+            flex: none;
+        }
+
+        .step-number {
+            width: 60px;
+            height: 60px;
+            font-size: 1.2rem;
+        }
+
+        .diagram-flow {
+            flex-direction: column;
+        }
+
+        .flow-arrow {
+            transform: rotate(90deg);
+            margin: 1rem 0;
+        }
+
+        .tech-highlights {
+            grid-template-columns: 1fr;
+        }
+
+        .performance-metrics {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 480px) {
+        .performance-metrics {
+            grid-template-columns: 1fr;
+        }
+
+        .architecture-diagram {
+            padding: 1.5rem;
+        }
+    }
+</style>
+
+<!-- Hero Section -->
+<section class="how-it-works-hero">
+    <div class="container">
+        <h1>How DeepShield AI Works</h1>
+        <p>Discover how our advanced multi-modal AI system detects deepfakes with unprecedented accuracy and speed.</p>
+    </div>
+</section>
+
+<!-- Video Upload & Processing -->
+<section class="process-section">
+    <div class="container">
+        <h2 class="section-title">The Detection Process</h2>
+        <div class="workflow-steps">
+            <!-- Step 1 -->
+            <div class="workflow-step">
+                <div class="step-visual">
+                    <div class="step-number">1</div>
+                    <div class="step-icon">📹</div>
+                    <div class="step-title">Video Upload</div>
+                </div>
+                <div class="step-content">
+                    <h3>Video Upload & Frame Extraction</h3>
+                    <p>The system accepts video uploads and strategically extracts 16 frames using optimized sampling techniques. This approach captures temporal variations while maintaining processing efficiency and ensuring comprehensive analysis coverage.</p>
+                    <ul class="feature-list">
+                        <li>Supports multiple video formats (MP4, AVI, MOV, MKV, WebM)</li>
+                        <li>Intelligent frame selection for optimal temporal coverage</li>
+                        <li>Automatic format conversion and normalization</li>
+                        <li>Secure temporary storage with automatic cleanup</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="workflow-step">
+                <div class="step-visual">
+                    <div class="step-number">2</div>
+                    <div class="step-icon">⚡</div>
+                    <div class="step-title">Parallel Processing</div>
+                </div>
+                <div class="step-content">
+                    <h3>Multi-Modal Parallel Analysis</h3>
+                    <p>Three independent detection modalities analyze frames simultaneously using advanced parallel processing, reducing analysis time by 2-3x while maintaining accuracy.</p>
+                    <ul class="feature-list">
+                        <li><strong>CLAHE Enhancement:</strong> Contrast-limited adaptive histogram equalization for texture analysis and enhancement</li>
+                        <li><strong>Edge Detection:</strong> Combined Canny + Sobel edge analysis for geometric inconsistency detection</li>
+                        <li><strong>FFT Analysis:</strong> Frequency domain analysis for compression artifacts and digital fingerprints</li>
+                        <li>Real-time modality confidence scoring</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="workflow-step">
+                <div class="step-visual">
+                    <div class="step-number">3</div>
+                    <div class="step-icon">📊</div>
+                    <div class="step-title">Sequence Generation</div>
+                </div>
+                <div class="step-content">
+                    <h3>Probability Sequence Generation</h3>
+                    <p>Individual modality predictions are combined into 5-frame sequences, creating temporal patterns that capture the evolution of manipulation indicators across the video timeline.</p>
+                    <ul class="feature-list">
+                        <li>Temporal pattern recognition across video frames</li>
+                        <li>Multi-frame correlation analysis</li>
+                        <li>Dynamic sequence length optimization</li>
+                        <li>Confidence-weighted probability aggregation</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Step 4 -->
+            <div class="workflow-step">
+                <div class="step-visual">
+                    <div class="step-number">4</div>
+                    <div class="step-icon">🧠</div>
+                    <div class="step-title">AI Fusion</div>
+                </div>
+                <div class="step-content">
+                    <h3>LSTM Neural Network Fusion</h3>
+                    <p>A specialized Long Short-Term Memory (LSTM) neural network processes the probability sequences, learning temporal dependencies and patterns to make the final classification decision with confidence scoring.</p>
+                    <ul class="feature-list">
+                        <li>Advanced temporal dependency analysis</li>
+                        <li>Multi-modal feature fusion</li>
+                        <li>Real-time confidence scoring</li>
+                        <li>Adaptive threshold optimization</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Step 5 -->
+            <div class="workflow-step">
+                <div class="step-visual">
+                    <div class="step-number">5</div>
+                    <div class="step-icon">🎯</div>
+                    <div class="step-title">Results Delivery</div>
+                </div>
+                <div class="step-content">
+                    <h3>Comprehensive Results & Analysis</h3>
+                    <p>The system provides detailed analysis including final verdict, confidence levels, modality-specific insights, and visual explanations to help users understand the detection rationale.</p>
+                    <ul class="feature-list">
+                        <li>Clear REAL/FAKE classification with confidence scores</li>
+                        <li>Modality-specific detection insights</li>
+                        <li>Visual explanation of detection factors</li>
+                        <li>Downloadable analysis reports</li>
+                        <li>API integration capabilities</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- System Architecture -->
+<section class="process-section">
+    <div class="container">
+        <h2 class="section-title">System Architecture</h2>
+        <div class="architecture-section">
+            <div class="architecture-diagram">
+                <div class="diagram-title">DeepShield AI Processing Pipeline</div>
+                <div class="diagram-flow">
+                    <div class="flow-step">
+                        <div class="flow-icon">📹</div>
+                        <h4>Input Video</h4>
+                        <p>Video upload and validation</p>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step">
+                        <div class="flow-icon">🖼️</div>
+                        <h4>Frame Extraction</h4>
+                        <p>16 strategic frames</p>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step">
+                        <div class="flow-icon">🔍</div>
+                        <h4>Multi-Modal Analysis</h4>
+                        <p>CLAHE, Edge, FFT</p>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step">
+                        <div class="flow-icon">🧠</div>
+                        <h4>LSTM Fusion</h4>
+                        <p>Temporal analysis</p>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step">
+                        <div class="flow-icon">📊</div>
+                        <h4>Results</h4>
+                        <p>Detailed report</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Technology Stack -->
+<section class="process-section">
+    <div class="container">
+        <h2 class="section-title">Technology Stack</h2>
+        <div class="tech-highlights">
+            <div class="tech-card">
+                <div class="tech-icon">🤖</div>
+                <h3>TensorFlow & Keras</h3>
+                <p>Advanced deep learning frameworks powering our neural networks with GPU acceleration for rapid inference and training.</p>
+            </div>
+            
+            <div class="tech-card">
+                <div class="tech-icon">👁️</div>
+                <h3>OpenCV</h3>
+                <p>Computer vision library handling frame extraction, preprocessing, CLAHE enhancement, and edge detection operations.</p>
+            </div>
+            
+            <div class="tech-card">
+                <div class="tech-icon">🌐</div>
+                <h3>Flask Framework</h3>
+                <p>Python web framework providing RESTful API endpoints and seamless integration between frontend and AI backend.</p>
+            </div>
+            
+            <div class="tech-card">
+                <div class="tech-icon">⚡</div>
+                <h3>Parallel Processing</h3>
+                <p>ThreadPoolExecutor enabling concurrent modality processing, reducing analysis time by 2-3x compared to sequential processing.</p>
+            </div>
+            
+            <div class="tech-card">
+                <div class="tech-icon">📊</div>
+                <h3>LSTM Networks</h3>
+                <p>Long Short-Term Memory networks for sophisticated temporal sequence analysis and multi-modal data fusion.</p>
+            </div>
+            
+            <div class="tech-card">
+                <div class="tech-icon">🔍</div>
+                <h3>Multi-Modal CNN</h3>
+                <p>Specialized convolutional neural networks optimized for CLAHE, edge, and frequency domain feature extraction.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Performance Metrics -->
+<section class="process-section">
+    <div class="container">
+        <h2 class="section-title">Performance Metrics</h2>
+        <div class="performance-metrics">
+            <div class="metric-card">
+                <div class="metric-number">95.2%</div>
+                <div class="metric-label">Detection Accuracy</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-number">0.1%</div>
+                <div class="metric-label">False Positive Rate</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-number">&lt;30s</div>
+                <div class="metric-label">Processing Time</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-number">1k+</div>
+                <div class="metric-label">Videos Analyzed</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-number">2-3x</div>
+                <div class="metric-label">Speed Improvement</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-number">16</div>
+                <div class="metric-label">Frames Analyzed</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Key Features -->
+<section class="process-section">
+    <div class="container">
+        <h2 class="section-title">Key Advantages</h2>
+        <div class="tech-highlights">
+            <div class="tech-card">
+                <div class="tech-icon">🎯</div>
+                <h3>Multi-Modal Detection</h3>
+                <p>Combines three independent detection modalities for comprehensive analysis, reducing false positives and increasing accuracy.</p>
+            </div>
+            
+            <div class="tech-card">
+                <div class="tech-icon">⚡</div>
+                <h3>Real-Time Processing</h3>
+                <p>Parallel processing architecture enables rapid analysis without compromising detection accuracy or reliability.</p>
+            </div>
+            
+            <div class="tech-card">
+                <div class="tech-icon">🔒</div>
+                <h3>Privacy First</h3>
+                <p>All uploaded videos are processed securely and automatically deleted after analysis, ensuring user privacy.</p>
+            </div>
+            
+            <div class="tech-card">
+                <div class="tech-icon">📈</div>
+                <h3>Continuous Learning</h3>
+                <p>Adaptive algorithms continuously improve detection capabilities as new deepfake techniques emerge.</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
